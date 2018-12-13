@@ -28,7 +28,8 @@ app.use(cors());
 app.post("/todos", (req, res) => {
   // create instance
   var todo = new Todo({
-    text: req.body.text
+    text: req.body.text,
+    cover: req.body.cover
   });
 
   console.log(req.body);
