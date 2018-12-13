@@ -1,6 +1,7 @@
 // to start the server
 var express = require("express");
 var bodyParser = require("body-parser");
+var cors = require("cors");
 
 var { mongoose } = require("./db/mongoose");
 var { Todo } = require("./models/todo");
@@ -13,7 +14,12 @@ var app = express();
 const port = process.env.PORT || 3000;
 
 // configure middleware
+
+// this allowed pass data as json
 app.use(bodyParser.json());
+
+// this allow cors
+app.use(cors());
 
 // setup the routes
 app.post("/todos", (req, res) => {
