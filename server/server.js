@@ -26,11 +26,12 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // setup the routes
-app.post("/todos", (req, res) => {
+app.post("/todos", authenticate, (req, res) => {
   // create instance
   var todo = new Todo({
     text: req.body.text,
-    cover: req.body.cover
+    cover: req.body.cover,
+    _creator: req.user._id
   });
 
   console.log(req.body);
@@ -47,8 +48,10 @@ app.post("/todos", (req, res) => {
   );
 });
 
-app.get("/todos", (req, res) => {
-  Todo.find().then(
+app.get("/todos", authenticate, (req, res) => {
+  Todo.find({
+    _creator: req.user._id
+  }).then(
     todos => {
       res.send({
         todos
@@ -60,7 +63,7 @@ app.get("/todos", (req, res) => {
   );
 });
 
-app.get("/todos/:id", (req, res) => {
+app.get("/todos/:id", authenticate, (req, res) => {
   var id = req.params.id;
 
   // validate id using isValid
@@ -70,7 +73,10 @@ app.get("/todos/:id", (req, res) => {
     return res.status(404).send();
   }
 
-  Todo.findById(id)
+  Todo.findOne({
+    _id: id,
+    _creator: req.user._id
+  })
     .then(todo => {
       if (!todo) {
         return res.status(404).send();
@@ -82,14 +88,17 @@ app.get("/todos/:id", (req, res) => {
     });
 });
 
-app.delete("/todos/:id", (req, res) => {
+app.delete("/todos/:id", authenticate, (req, res) => {
   var id = req.params.id;
 
   if (!ObjectID.isValid(id)) {
     return res.status(404).send();
   }
 
-  Todo.findByIdAndRemove(id)
+  Todo.findByOneAndRemove({
+    _id: id,
+    _creator: req.user._id
+  })
     .then(todo => {
       if (!todo) {
         return res.status(404).send();
@@ -101,7 +110,7 @@ app.delete("/todos/:id", (req, res) => {
     });
 });
 
-app.patch("/todos/:id", (req, res) => {
+app.patch("/todos/:id", authenticate, (req, res) => {
   var id = req.params.id;
   var body = _.pick(req.body, ["text", "cover"]);
 
@@ -109,7 +118,11 @@ app.patch("/todos/:id", (req, res) => {
     return res.status(404).send();
   }
 
-  Todo.findByIdAndUpdate(id, { $set: body }, { new: true })
+  Todo.findByOneAndUpdate(
+    { _id: id, _creator: req.user._id },
+    { $set: body },
+    { new: true }
+  )
     .then(todo => {
       if (!todo) {
         return res.status(404).send();
@@ -161,6 +174,7 @@ app.post("/users/login", (req, res) => {
     });
 });
 
+// logout
 app.delete("/users/me/token", authenticate, (req, res) => {
   req.user.removeToken(req.token).then(
     () => {
