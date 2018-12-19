@@ -34,7 +34,7 @@ app.post("/todos", authenticate, (req, res) => {
     _creator: req.user._id
   });
 
-  console.log(req.body);
+  // console.log(req.body);
 
   // save to database
   todo.save().then(
@@ -43,7 +43,7 @@ app.post("/todos", authenticate, (req, res) => {
     },
     e => {
       res.status(400).send(e);
-      console.log(JSON.stringify(e), undefined, 2);
+      // console.log(JSON.stringify(e), undefined, 2);
     }
   );
 });
@@ -166,7 +166,9 @@ app.post("/users/login", (req, res) => {
     .then(user => {
       // res.send(user);
       return user.generateAuthToken().then(token => {
-        res.header("x-auth", token).send(user);
+        res.header("x-auth", token).send({ user: user, token: token });
+        // console.log("Token value: ", token);
+        // res.send(token);
       });
     })
     .catch(e => {
