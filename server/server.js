@@ -34,8 +34,6 @@ app.post("/todos", authenticate, (req, res) => {
     _creator: req.user._id
   });
 
-  // console.log(req.body);
-
   // save to database
   todo.save().then(
     doc => {
@@ -162,12 +160,14 @@ app.get("/users/me", authenticate, (req, res) => {
 app.post("/users/login", (req, res) => {
   var body = _.pick(req.body, ["email", "password"]);
 
+  console.log(body);
+
   User.findByCredentials(body.email, body.password)
     .then(user => {
       // res.send(user);
       return user.generateAuthToken().then(token => {
         res.header("x-auth", token).send({ user: user, token: token });
-        // console.log("Token value: ", token);
+        console.log("Token value: ", token);
         // res.send(token);
       });
     })
